@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brownian Tree</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: auto;
+      background: black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="treeCanvas" width="500" height="500"></canvas>
+
+  <script>
+    const canvas = document.getElementById('treeCanvas');
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+    const grid = Array(size).fill(null).map(() => Array(size).fill(false));
+    const center = Math.floor(size / 2);
+    grid[center][center] = true;
+
+    const directions = [
+      [1, 0], [-1, 0], [0, 1], [0, -1],
+      [1, 1], [-1, -1], [1, -1], [-1, 1]
+    ];
+
+    function isTouching(x, y) {
+      return directions.some(([dx, dy]) => {
+        const nx = x + dx, ny = y + dy;
+        return nx >= 0 && ny >= 0 && nx < size && ny < size && grid[nx][ny];
+      });
+    }
+
+    function randomWalk() {
+      let angle = Math.random() * 2 * Math.PI;
+      let r = size / 2 - 5;
+      let x = Math.floor(center + r * Math.cos(angle));
+      let y = Math.floor(center + r * Math.sin(angle));
+
+      for (let i = 0; i < 10000; i++) {
+        let [dx, dy] = directions[Math.floor(Math.random() * directions.length)];
+        x += dx;
+        y += dy;
+
+        if (x < 1 || y < 1 || x >= size - 1 || y >= size - 1) break;
+
+        if (isTouching(x, y)) {
+          grid[x][y] = true;
+          ctx.fillStyle = 'lime';
+          ctx.fillRect(x, y, 1, 1);
+          break;
+        }
+      }
+    }
+
+    // Main simulation loop
+    let particles = 0;
+    const maxParticles = 5000;
+    function simulate() {
+      for (let i = 0; i < 5; i++) {  // Speed up by adding multiple per frame
+        if (particles >= maxParticles) return;
+        randomWalk();
+        particles++;
+      }
+      requestAnimationFrame(simulate);
+    }
+
+    simulate();
+  </script>
+</body>
+</html>
